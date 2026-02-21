@@ -1,0 +1,15 @@
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Environment variables (NEVER push this!)
+server/.env
+client/.env
+
+# Build files
+client/dist/
+
+# Logs
+*.log
+npm-debug.log*
