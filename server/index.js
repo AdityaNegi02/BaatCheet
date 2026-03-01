@@ -6,6 +6,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
+const uploadRoutes = require("./routes/upload");
 const socketHandler = require("./socket/socketHandler");
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use(express.json());
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/upload", uploadRoutes);
 
 // Socket
 socketHandler(io);

@@ -13,7 +13,25 @@ const messageSchema = new mongoose.Schema(
     },
     content: {
       type: String,
-      required: true,
+      default: "",
+    },
+    // File attachment fields
+    fileUrl: {
+      type: String,
+      default: "",
+    },
+    fileName: {
+      type: String,
+      default: "",
+    },
+    fileType: {
+      type: String,
+      default: "", // "image", "pdf", "doc", etc.
+    },
+    messageType: {
+      type: String,
+      enum: ["text", "file", "image"],
+      default: "text",
     },
   },
   { timestamps: true }
