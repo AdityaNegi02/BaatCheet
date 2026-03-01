@@ -1,7 +1,9 @@
+const dotenv = require("dotenv");
+dotenv.config(); // MUST be first before any require that uses env vars
+
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const dotenv = require("dotenv");
 const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
@@ -9,7 +11,6 @@ const chatRoutes = require("./routes/chat");
 const uploadRoutes = require("./routes/upload");
 const socketHandler = require("./socket/socketHandler");
 
-dotenv.config();
 connectDB();
 
 const app = express();
@@ -24,7 +25,8 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({ origin: process.env.CLIENT_URL }));
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // Routes
 app.use("/api/auth", authRoutes);

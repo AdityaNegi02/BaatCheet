@@ -1,6 +1,4 @@
 const cloudinary = require("cloudinary").v2;
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
-const multer = require("multer");
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -8,28 +6,4 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const storage = new CloudinaryStorage({
-  cloudinary,
-  params: async (req, file) => {
-    let resourceType = "raw"; // for docs, pdfs
-    if (file.mimetype.startsWith("image/")) resourceType = "image";
-    if (file.mimetype.startsWith("video/")) resourceType = "video";
-
-    return {
-      folder: "baatcheet",
-      resource_type: resourceType,
-      allowed_formats: [
-        "jpg", "jpeg", "png", "gif", "webp",
-        "pdf", "doc", "docx", "txt", "zip",
-        "mp4", "mp3"
-      ],
-    };
-  },
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
-});
-
-module.exports = { upload, cloudinary };
+module.exports = cloudinary;
