@@ -50,8 +50,6 @@ setInterval(async () => {
   }
 }, 60 * 1000);
 
-const path = require("path");
-
 // Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || "*" }));
 app.use(express.json());
@@ -61,22 +59,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/chat", chatRoutes);
 app.use("/api/upload", uploadRoutes);
 
-// --- PRODUCTION CONFIG ---
-if (process.env.NODE_ENV === "production") {
-  // Set static folder
-  const __dirname = path.resolve();
-  app.use(express.static(path.join(__dirname, "/client/dist")));
-
-  // Any route that is not an API route will be redirected to the frontend
-  app.get("*", (req, res) =>
-    res.sendFile(path.resolve(__dirname, "client", "dist", "index.html"))
-  );
-} else {
-  app.get("/", (req, res) => {
-    res.send("API is running...");
-  });
-}
-// --------------------------
+app.get("/", (req, res) => {
+  res.send("BaatCheet API is running...");
+});
 
 // Socket
 socketHandler(io);
