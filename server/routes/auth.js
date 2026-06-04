@@ -22,7 +22,7 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Please complete the CAPTCHA" });
     }
 
-    console.log("Verifying CAPTCHA...");
+    console.log("Verifying CAPTCHA with Secret Key (starts with):", process.env.RECAPTCHA_SECRET_KEY?.substring(0, 5));
     const captchaResponse = await axios.post(
       `https://www.google.com/recaptcha/api/siteverify`,
       null,
@@ -34,12 +34,13 @@ router.post("/register", async (req, res) => {
       }
     );
 
-    console.log("CAPTCHA Response:", captchaResponse.data);
+    console.log("CAPTCHA Response Data:", captchaResponse.data);
 
     if (!captchaResponse.data.success) {
+      console.error("CAPTCHA Failure Codes:", captchaResponse.data["error-codes"]);
       return res.status(400).json({ 
         message: "CAPTCHA verification failed", 
-        error: captchaResponse.data["error-codes"] 
+        errors: captchaResponse.data["error-codes"] 
       });
     }
 
