@@ -1,8 +1,6 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const axios = require("axios");
-const validateEmail = require("deep-email-validator").validate;
 const User = require("../models/User");
 
 const router = express.Router();
@@ -11,42 +9,28 @@ const router = express.Router();
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
+
 // @route POST /api/auth/register
 router.post("/register", async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    // 1. Strict Email Validation
-...
-    console.log("Validating email:", email);
-    const emailRes = await validateEmail({
-      email,
-      validateRegex: true,
-      validateMx: true,
-      validateTypo: true,
-      validateDisposable: true,
-      validateSMTP: false,
-    });
-
-    if (!emailRes.valid) {
-      console.log("Email validation failed:", emailRes.reason);
-      return res.status(400).json({ 
-        message: "Please provide a valid, active email address",
-        reason: emailRes.reason 
-      });
+    // 1. Basic validation
+    if (!username || !email || !password) {
+      return res.status(400).json({ message: "Please enter all fields" });
     }
 
-    // 3. Check if user already exists
+    // 2. Check if user already exists
     const userExists = await User.findOne({ email });
     if (userExists) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // 4. Hash password
+    // 3. Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // 5. Create user
+    // 4. Create user
     const user = await User.create({
       username,
       email,
@@ -70,6 +54,10 @@ router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
   try {
+    if (!email || !password) {
+      return res.status(400).json({ message: "Please enter all fields" });
+    }
+
     // Find user
     const user = await User.findOne({ email });
     if (!user) {
