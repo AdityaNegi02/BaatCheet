@@ -1,0 +1,139 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --text: #374151;
+  --text-h: #111827;
+  --bg: #ffffff;
+  --bg-subtle: #f9fafb;
+  --border: #e5e7eb;
+  --accent: #000000;
+  --accent-contrast: #ffffff;
+  --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+:root.dark {
+  --text: #9ca3af;
+  --text-h: #f9fafb;
+  --bg: #0a0a0a;
+  --bg-subtle: #171717;
+  --border: #262626;
+  --accent: #ffffff;
+  --accent-contrast: #000000;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  @apply transition-colors duration-300;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: var(--text-h);
+  letter-spacing: -0.025em;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-slide-up { animation: slide-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-fade-in { animation: fade-in 0.4s ease-out forwards; }
+
+/* Diagonal Pattern Utility */
+.bg-diagonal {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    var(--border) 10px,
+    var(--border) 11px
+  );
+  opacity: 0.4;
+}
+
+/* Minimalist UI Elements */
+.card-minimal {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  @apply rounded-xl transition-all duration-300;
+}
+
+.input-minimal {
+  @apply w-full px-4 py-3 border rounded-lg transition-all duration-200 outline-none font-medium;
+  background-color: var(--bg-subtle);
+  border-color: var(--border);
+  color: var(--text-h);
+}
+
+.input-minimal:focus {
+  border-color: var(--accent);
+  @apply ring-1 ring-black/5 dark:ring-white/5;
+}
+
+.btn-black {
+  @apply px-6 py-3 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50;
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+}
+
+.btn-black:hover {
+  @apply opacity-90;
+}
+
+.btn-white {
+  @apply px-6 py-3 border border-slate-200 rounded-lg font-semibold transition-all duration-200 flex items-center justify-center gap-2 active:scale-[0.98] dark:border-neutral-800;
+  background-color: var(--bg);
+  color: var(--text-h);
+}
+
+.btn-white:hover {
+  background-color: var(--bg-subtle);
+  border-color: var(--text);
+}
+
+/* Modern Chat Components */
+.msg-bubble-min {
+  @apply max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed;
+}
+
+.msg-sent-min {
+  background-color: var(--accent);
+  color: var(--accent-contrast);
+  @apply rounded-tr-none shadow-sm;
+}
+
+.msg-received-min {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border);
+  color: var(--text-h);
+  @apply rounded-tl-none;
+}
+
+/* Header Icons Style */
+.nav-icon {
+  @apply w-9 h-9 flex items-center justify-center rounded-lg border border-transparent hover:border-slate-200 hover:bg-slate-50 transition-all dark:hover:border-neutral-800 dark:hover:bg-neutral-900;
+}
