@@ -7,6 +7,27 @@
 
 ---
 
+## 📷 Screenshots of the Project
+
+-Login/Authorization Page(DARK/LIGHT)
+<img width="1890" height="893" alt="Screenshot 2026-06-04 210659" src="https://github.com/user-attachments/assets/d69c0b99-f668-440e-86b8-51ec78fffc12" />
+<img width="1907" height="896" alt="Screenshot 2026-06-04 210710" src="https://github.com/user-attachments/assets/5588dbad-50e3-47fc-bda7-033ca326b7d4" />
+
+-User Dashboard Page(DARK/LIGHT)
+<img width="1912" height="895" alt="Screenshot 2026-06-04 210641" src="https://github.com/user-attachments/assets/2b25cd8b-fa20-4dbd-8937-756aa05332d6" />
+<img width="1908" height="889" alt="Screenshot 2026-06-04 210726" src="https://github.com/user-attachments/assets/d9e75e50-349f-4ddb-b480-0bbd42153dcc" />
+
+-Document Transfered through Chat
+<img width="1919" height="904" alt="Screenshot 2026-06-04 211044" src="https://github.com/user-attachments/assets/c99362da-4f92-464a-b79b-2adf21144ac9" />
+
+-Call Initiated
+<img width="1916" height="904" alt="Screenshot 2026-06-04 211133" src="https://github.com/user-attachments/assets/5a686ce8-9bf9-4dfc-ac57-dea5d7ad4e53" />
+
+-Call Received
+<img width="1917" height="908" alt="Screenshot 2026-06-04 211142" src="https://github.com/user-attachments/assets/ffcbd246-4c21-4d7c-a97b-9b8ad760a24d" />
+
+---
+
 ## ⚙️ How It Executes
 
 BaatCheet operates as a high-concurrency real-time system where the server orchestrates both persistent storage and live event broadcasting.
@@ -119,7 +140,6 @@ MIT License - Open Source and free to use.
 
 ---
 
-## 📷 Screenshots of the Project
 
--
-<img width="1890" height="893" alt="Screenshot 2026-06-04 210659" src="https://github.com/user-attachments/assets/d69c0b99-f668-440e-86b8-51ec78fffc12" />
+
+
