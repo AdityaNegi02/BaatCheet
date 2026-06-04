@@ -17,6 +17,10 @@ const roomSchema = new mongoose.Schema(
         ref: "User",
       },
     ],
+    lastActivity: {
+      type: Date,
+      default: Date.now,
+    },
   },
   { timestamps: true }
 );

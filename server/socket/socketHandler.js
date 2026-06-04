@@ -5,47 +5,37 @@ const jwt = require("jsonwebtoken");
 
 // Store active room timers
 const roomTimers = {};
+// Store user socket IDs: { userId: socketId }
+const userSockets = {};
 
 // Start 10 min delete timer for a room
 const startRoomTimer = (roomCode, io) => {
-  // Clear existing timer if any
   if (roomTimers[roomCode]) {
     clearTimeout(roomTimers[roomCode]);
   }
 
-  console.log(`Starting 10 min timer for room: ${roomCode}`);
-
   roomTimers[roomCode] = setTimeout(async () => {
     try {
-      // Check if anyone is in the room
       const socketsInRoom = await io.in(roomCode).fetchSockets();
 
       if (socketsInRoom.length === 0) {
-        // Delete messages and room from DB
         await Message.deleteMany({ roomCode });
         await Room.deleteOne({ roomCode });
-
-        console.log(`Room ${roomCode} deleted due to inactivity`);
-
-        // Notify anyone who might rejoin
-        io.to(roomCode).emit("room_deleted", {
-          message: "Room was deleted due to 10 minutes of inactivity",
-        });
+        console.log(`Room ${roomCode} deleted: Empty for 10 mins`);
       }
     } catch (err) {
-      console.error("Error deleting room:", err);
+      console.error("Error deleting empty room:", err);
     } finally {
       delete roomTimers[roomCode];
     }
-  }, 10 * 60 * 1000); // 10 minutes
+  }, 10 * 60 * 1000);
 };
 
-// Cancel timer when someone joins
-const cancelRoomTimer = (roomCode) => {
-  if (roomTimers[roomCode]) {
-    clearTimeout(roomTimers[roomCode]);
-    delete roomTimers[roomCode];
-    console.log(`Timer cancelled for room: ${roomCode}`);
+const updateRoomActivity = async (roomCode) => {
+  try {
+    await Room.findOneAndUpdate({ roomCode }, { lastActivity: new Date() });
+  } catch (err) {
+    console.error("Error updating room activity:", err);
   }
 };
 
@@ -57,6 +47,7 @@ const socketHandler = (io) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       const user = await User.findById(decoded.id).select("-password");
+      if (!user) return next(new Error("User not found"));
       socket.user = user;
       next();
     } catch (err) {
@@ -65,24 +56,24 @@ const socketHandler = (io) => {
   });
 
   io.on("connection", async (socket) => {
-    console.log(`User connected: ${socket.user.username}`);
-
     await User.findByIdAndUpdate(socket.user._id, { isOnline: true });
+    // Map userId to socketId
+    userSockets[socket.user._id.toString()] = socket.id;
 
-    // Broadcast file message to room
-    socket.on("broadcast_file", ({ roomCode, message }) => {
-     socket.to(roomCode).emit("receive_message", message);
-    });
     // Join room
     socket.on("join_room", (roomCode) => {
+      if (!roomCode) return;
+      
       socket.join(roomCode);
       socket.currentRoom = roomCode;
+      console.log(`[JOIN] ${socket.user.username} (${socket.id}) -> ${roomCode}`);
+      
+      // Update everyone on peer count
+      const room = io.sockets.adapter.rooms.get(roomCode);
+      const peerCount = room ? room.size : 0;
+      io.to(roomCode).emit("peer_count_update", { count: peerCount });
 
-      // Cancel delete timer since someone joined
-      cancelRoomTimer(roomCode);
-
-      console.log(`${socket.user.username} joined room: ${roomCode}`);
-
+      updateRoomActivity(roomCode);
       socket.to(roomCode).emit("user_joined", {
         username: socket.user.username,
         message: `${socket.user.username} joined the room`,
@@ -100,30 +91,80 @@ const socketHandler = (io) => {
         });
         const populatedMessage = await message.populate("sender", "username avatar");
         io.to(roomCode).emit("receive_message", populatedMessage);
+        
+        // Update activity on every message
+        await updateRoomActivity(roomCode);
       } catch (err) {
         console.error("Message error:", err);
       }
     });
 
-    // Typing
-    socket.on("typing", (roomCode) => {
-      socket.to(roomCode).emit("user_typing", { username: socket.user.username });
+    // File Broadcast
+    socket.on("broadcast_file", async ({ roomCode, message }) => {
+      socket.to(roomCode).emit("receive_message", message);
+      await updateRoomActivity(roomCode);
     });
 
-    socket.on("stop_typing", (roomCode) => {
-      socket.to(roomCode).emit("user_stop_typing");
+    // WebRTC Signaling
+    socket.on("call_user", async ({ roomCode, offer }) => {
+      console.log(`[CALL] ${socket.user.username} calling in ${roomCode}`);
+      
+      // Deep Room Inspection
+      const room = io.sockets.adapter.rooms.get(roomCode);
+      const peers = room ? Array.from(room) : [];
+      console.log(`[ROOM STATE] ${roomCode} has ${peers.length} peers:`, peers);
+
+      // Force join if somehow missing
+      if (!socket.rooms.has(roomCode)) {
+        console.warn(`[FIX] ${socket.user.username} was not in room ${roomCode}. Force joining...`);
+        socket.join(roomCode);
+      }
+
+      socket.to(roomCode).emit("incoming_call", {
+        from: socket.user.username,
+        fromId: socket.user._id,
+        offer,
+      });
+      await updateRoomActivity(roomCode);
+    });
+
+    socket.on("answer_call", ({ roomCode, answer, toId }) => {
+      const targetId = toId?.toString();
+      console.log(`Call: Answer from ${socket.user.username} to ${targetId}`);
+      if (targetId && userSockets[targetId]) {
+        io.to(userSockets[targetId]).emit("call_accepted", { answer, fromId: socket.user._id });
+      } else {
+        socket.to(roomCode).emit("call_accepted", { answer, fromId: socket.user._id });
+      }
+    });
+
+    socket.on("ice_candidate", ({ roomCode, candidate, toId }) => {
+      const targetId = toId?.toString();
+      if (targetId && userSockets[targetId]) {
+        io.to(userSockets[targetId]).emit("ice_candidate", { candidate, fromId: socket.user._id });
+      } else {
+        socket.to(roomCode).emit("ice_candidate", { candidate, fromId: socket.user._id });
+      }
+    });
+
+    socket.on("end_call", ({ roomCode }) => {
+      socket.to(roomCode).emit("call_ended");
     });
 
     // Leave room manually
     socket.on("leave_room", async (roomCode) => {
       socket.leave(roomCode);
+      socket.currentRoom = null;
+
+      const room = io.sockets.adapter.rooms.get(roomCode);
+      const peerCount = room ? room.size : 0;
+      io.to(roomCode).emit("peer_count_update", { count: peerCount });
 
       socket.to(roomCode).emit("user_left", {
         username: socket.user.username,
         message: `${socket.user.username} left the room`,
       });
 
-      // Check if room is now empty
       const socketsInRoom = await io.in(roomCode).fetchSockets();
       if (socketsInRoom.length === 0) {
         startRoomTimer(roomCode, io);
@@ -132,19 +173,24 @@ const socketHandler = (io) => {
 
     // Disconnect
     socket.on("disconnect", async () => {
-      console.log(`User disconnected: ${socket.user.username}`);
       await User.findByIdAndUpdate(socket.user._id, { isOnline: false });
+      delete userSockets[socket.user._id.toString()];
 
       if (socket.currentRoom) {
-        socket.to(socket.currentRoom).emit("user_left", {
+        const roomCode = socket.currentRoom;
+        
+        const room = io.sockets.adapter.rooms.get(roomCode);
+        const peerCount = room ? room.size : 0;
+        io.to(roomCode).emit("peer_count_update", { count: peerCount });
+
+        socket.to(roomCode).emit("user_left", {
           username: socket.user.username,
           message: `${socket.user.username} left the room`,
         });
 
-        // Check if room is now empty
-        const socketsInRoom = await io.in(socket.currentRoom).fetchSockets();
+        const socketsInRoom = await io.in(roomCode).fetchSockets();
         if (socketsInRoom.length === 0) {
-          startRoomTimer(socket.currentRoom, io);
+          startRoomTimer(roomCode, io);
         }
       }
     });

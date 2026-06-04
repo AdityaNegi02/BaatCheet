@@ -15,7 +15,6 @@ const messageSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    // File attachment fields
     fileUrl: {
       type: String,
       default: "",
@@ -26,7 +25,7 @@ const messageSchema = new mongoose.Schema(
     },
     fileType: {
       type: String,
-      default: "", // "image", "pdf", "doc", etc.
+      default: "",
     },
     messageType: {
       type: String,
