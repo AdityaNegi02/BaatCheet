@@ -11,40 +11,13 @@ const router = express.Router();
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
-
 // @route POST /api/auth/register
 router.post("/register", async (req, res) => {
-  const { username, email, password, captchaToken } = req.body;
+  const { username, email, password } = req.body;
 
   try {
-    // 1. Verify CAPTCHA
-    if (!captchaToken) {
-      return res.status(400).json({ message: "Please complete the CAPTCHA" });
-    }
-
-    console.log("Verifying CAPTCHA with Secret Key (starts with):", process.env.RECAPTCHA_SECRET_KEY?.substring(0, 5));
-    const captchaResponse = await axios.post(
-      `https://www.google.com/recaptcha/api/siteverify`,
-      null,
-      {
-        params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: captchaToken,
-        },
-      }
-    );
-
-    console.log("CAPTCHA Response Data:", captchaResponse.data);
-
-    if (!captchaResponse.data.success) {
-      console.error("CAPTCHA Failure Codes:", captchaResponse.data["error-codes"]);
-      return res.status(400).json({ 
-        message: "CAPTCHA verification failed", 
-        errors: captchaResponse.data["error-codes"] 
-      });
-    }
-
-    // 2. Strict Email Validation
+    // 1. Strict Email Validation
+...
     console.log("Validating email:", email);
     const emailRes = await validateEmail({
       email,

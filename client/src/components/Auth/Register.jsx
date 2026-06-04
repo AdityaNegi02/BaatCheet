@@ -6,37 +6,25 @@ import api from "../../utils/api";
 
 const Register = () => {
   const [form, setForm] = useState({ username: "", email: "", password: "" });
-  const [captchaToken, setCaptchaToken] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-  const recaptchaRef = useRef();
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleCaptchaChange = (token) => {
-    setCaptchaToken(token);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!captchaToken) {
-      return setError("Please complete the CAPTCHA");
-    }
-
     setLoading(true);
     setError("");
     try {
-      const { data } = await api.post("/auth/register", { ...form, captchaToken });
+      const { data } = await api.post("/auth/register", form);
       login(data);
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Something went wrong");
-      recaptchaRef.current.reset();
-      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -94,17 +82,6 @@ const Register = () => {
           required
           className="input-minimal !py-4 !text-[13px] tracking-tight"
         />
-      </div>
-
-      <div className="flex justify-center py-4 scale-90 sm:scale-100">
-        <div className="rounded-lg overflow-hidden border-2 border-[var(--border)] shadow-sm grayscale hover:grayscale-0 transition-all duration-500">
-          <ReCAPTCHA
-            ref={recaptchaRef}
-            sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"} // Fallback to test key
-            onChange={handleCaptchaChange}
-            theme={window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"}
-          />
-        </div>
       </div>
 
       <button
