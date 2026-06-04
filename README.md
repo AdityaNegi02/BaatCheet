@@ -116,3 +116,10 @@ CLOUDINARY_API_SECRET=...
 
 ## 📄 License
 MIT License - Open Source and free to use.
+
+---
+
+## 📷 Screenshots of the Project
+
+-
+<img width="1890" height="893" alt="Screenshot 2026-06-04 210659" src="https://github.com/user-attachments/assets/d69c0b99-f668-440e-86b8-51ec78fffc12" />
