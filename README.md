@@ -52,11 +52,11 @@ BaatCheet operates as a high-concurrency real-time system where the server orche
 
 ## 🚀 Key Features
 
-- 🔐 **Secure Auth** — JWT, bcrypt hashing, strict email validation, and Google reCAPTCHA.
-- 📞 **P2P Video Calls** — Built-in video and voice calling using WebRTC.
-- 💬 **Smart Messaging** — Real-time delivery, typing indicators, and file/image attachments.
-- 🧹 **Auto-Cleanup** — Self-maintaining database that deletes inactive rooms/messages.
-- 📱 **Clean UI** — Modern, light-themed responsive design focused on readability.
+- **Secure Auth** — JWT, bcrypt hashing, strict email validation, and Google reCAPTCHA.
+- **P2P Video Calls** — Built-in video and voice calling using WebRTC.
+- **Smart Messaging** — Real-time delivery, typing indicators, and file/image attachments.
+- **Auto-Cleanup** — Self-maintaining database that deletes inactive rooms/messages.
+- **Clean UI** — Modern, light-themed responsive design focused on readability.
 
 ---
 
@@ -74,7 +74,7 @@ BaatCheet operates as a high-concurrency real-time system where the server orche
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 BaatCheet/
@@ -96,7 +96,7 @@ BaatCheet/
 
 ---
 
-## ⚙️ Setup Instructions
+## Setup Instructions
 
 ### 1. Backend Setup
 1. `cd server`
@@ -119,21 +119,6 @@ CLOUDINARY_API_SECRET=...
 1. `cd client`
 2. `npm install`
 3. `npm run dev`
-
----
-
-## 👨‍💻 Implementation Details (For Interview)
-
-- **Q: How do you handle file uploads?**
-- *A: We use Multer for handling multipart/form-data and Cloudinary for permanent storage. The URL is then broadcasted via Socket.IO.*
-
-- **Q: How does the cleanup task work?**
-- *A: A `setInterval` runs every minute on the server, querying the `Rooms` collection for any document where `lastActivity` < `(Now - 30 mins)`. Matching rooms are deleted along with their messages.*
-
-- **Q: Why WebRTC?**
-- *A: It reduces server costs significantly because the media data doesn't pass through our server—it goes directly between users.*
-
----
 
 ## 📄 License
 MIT License - Open Source and free to use.
